@@ -57,6 +57,7 @@ const ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'purchase.incart.me',
+    'embed.incart.me',
     'rycont.loca.lt',
     'tidy-rat-99.loca.lt',
 ]
