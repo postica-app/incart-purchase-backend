@@ -3,6 +3,7 @@ export {
     Router,
     Application as Oak,
 } from 'https://deno.land/x/oak@v11.1.0/mod.ts'
+export type { Middleware } from 'https://deno.land/x/oak@v11.1.0/mod.ts'
 export type {
     CreateOrderType,
     ProductType,

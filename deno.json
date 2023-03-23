@@ -1,0 +1,12 @@
+{
+    "imports": {
+        "@haechi/rush": "../haechi-rush/index.ts",
+        "zod": "npm:zod@^3.17.3",
+        "immer": "npm:immer@^9.0.15",
+        "chokidar": "npm:chokidar@^3.5.3",
+        "zod-openapi": "npm:@anatine/zod-openapi@^1.5.0",
+        "fs/promises": "node:fs/promises",
+        "http": "node:http",
+        "path": "node:path"
+    }
+}
