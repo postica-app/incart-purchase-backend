@@ -6,16 +6,23 @@ import {
 } from './utils.ts'
 import { Router, CreateOrderType } from './deps.ts'
 import { EndpointError } from './EndpointError.ts'
+import { captcha } from './middlewares/index.ts'
 
-export const router = new Router()
+export const routeWithCaptcha = new Router()
+export const routeWithoutCaptcha = new Router()
 
-router
-    .get('/product/:uuid', async (ctx) => {
-        const uuid = ctx.params.uuid
-        const product = await getProductFromUUID(uuid)
+routeWithoutCaptcha.get('/product/:uuid', async (ctx) => {
+    console.log('이게 들어가야되는거 아니에요?')
+    console.log('이게 왜 실행됨?')
 
-        ctx.response.body = product
-    })
+    const uuid = ctx.params.uuid
+    const product = await getProductFromUUID(uuid)
+
+    ctx.response.body = product
+})
+
+routeWithCaptcha.use(captcha)
+routeWithCaptcha
     .get('/store/:uuid', async (ctx) => {
         const uuid = ctx.params.uuid
         const store = await getStoreFromUUID(uuid)

@@ -3,11 +3,11 @@ import { Middleware } from '../deps.ts'
 import { EndpointError } from '../EndpointError.ts'
 
 export const captcha: Middleware = async (ctx, next) => {
-    const captcha = ctx.request.headers.get('X-Captcha-Token')
+    const captchaHeader = ctx.request.headers.get('X-Captcha-Token')
 
     if (ctx.request.method === 'OPTIONS') return await next()
 
-    if (!captcha) {
+    if (!captchaHeader) {
         if (IS_DEV) {
             console.log('⚠️ PLEASE CHECK!! ⚠️')
             console.log(
@@ -27,7 +27,7 @@ export const captcha: Middleware = async (ctx, next) => {
                 method: 'POST',
                 body: new URLSearchParams({
                     secret: Deno.env.get('TURNSTILE_SECRET_KEY')!,
-                    response: captcha,
+                    response: captchaHeader,
                 }),
             }
         )
