@@ -3,6 +3,7 @@ import {
     PostgresAdapter,
     PostgresIntrospector,
     Client as Postgres,
+    Pool as PostgresPool,
     PostgresQueryCompiler,
     QueryResult,
     CompiledQuery,
@@ -11,13 +12,16 @@ import {
 } from './deps.ts'
 import { DB } from './DatabaseType.ts'
 
-export const client = new Postgres({
-    tls: {
-        caCertificates: [Deno.env.get('PEM')!.split('\\n').join('\n')],
+export const client = await new PostgresPool(
+    {
+        tls: {
+            caCertificates: [Deno.env.get('PEM')!.split('\\n').join('\n')],
+        },
     },
-})
+    3,
+    true
+).connect()
 
-await client.connect()
 const querySample = (
     (await client.queryObject("SELECT 'Hello world!' as test")).rows[0] as {
         test: string
