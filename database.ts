@@ -2,7 +2,6 @@ import {
     Kysely,
     PostgresAdapter,
     PostgresIntrospector,
-    Client as Postgres,
     Pool as PostgresPool,
     PostgresQueryCompiler,
     QueryResult,
@@ -14,6 +13,7 @@ import { DB } from './DatabaseType.ts'
 
 export const client = await new PostgresPool(
     {
+        host_type: 'tcp',
         tls: {
             caCertificates: [Deno.env.get('PEM')!.split('\\n').join('\n')],
         },
