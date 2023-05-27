@@ -23,8 +23,8 @@ routeWithoutCaptcha.get('/product/:uuid', async (ctx) => {
 
 routeWithCaptcha.use(captcha)
 routeWithCaptcha
-    .get('/store/:uuid', async (ctx) => {
-        const uuid = ctx.params.uuid
+    .get('/store/:rid', async (ctx) => {
+        const uuid = ctx.params.rid
         const store = await getStoreFromUUID(uuid)
 
         ctx.response.body = store
@@ -47,10 +47,10 @@ routeWithCaptcha
         const productByIdMap = await getProductFromMultipleUUIDs(productIds)
         const fetchedProducts = [...productByIdMap.values()]
 
-        const storeId = fetchedProducts[0].store_id
+        const storeRid = fetchedProducts[0].store_rid
 
         for (const product of fetchedProducts) {
-            if (product.store_id !== storeId)
+            if (product.store_rid !== storeRid)
                 throw new EndpointError(
                     '상품은 같은 가게에서만 구매할 수 있습니다',
                     400

@@ -1,10 +1,12 @@
-import { ColumnType, Buffer } from './deps.ts'
+import type { ColumnType } from './deps.ts'
 
-export type AalLevel = 'aal1' | 'aal2' | 'aal3'
+export type AuthAalLevel = 'aal1' | 'aal2' | 'aal3'
 
-export type FactorStatus = 'unverified' | 'verified'
+export type AuthCodeChallengeMethod = 'plain' | 's256'
 
-export type FactorType = 'totp' | 'webauthn'
+export type AuthFactorStatus = 'unverified' | 'verified'
+
+export type AuthFactorType = 'totp' | 'webauthn'
 
 export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
     ? ColumnType<S, I | undefined, U>
@@ -28,9 +30,11 @@ export type JsonPrimitive = boolean | null | number | string
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive
 
-export type KeyStatus = 'default' | 'expired' | 'invalid' | 'valid'
+export type Numeric = ColumnType<string, string | number, string | number>
 
-export type KeyType =
+export type PgsodiumKeyStatus = 'default' | 'expired' | 'invalid' | 'valid'
+
+export type PgsodiumKeyType =
     | 'aead-det'
     | 'aead-ietf'
     | 'auth'
@@ -51,6 +55,20 @@ export interface AuthAuditLogEntries {
     payload: Json | null
     created_at: Timestamp | null
     ip_address: Generated<string>
+}
+
+export interface AuthFlowState {
+    id: string
+    user_id: string | null
+    auth_code: string
+    code_challenge_method: AuthCodeChallengeMethod
+    code_challenge: string
+    provider_type: string
+    provider_access_token: string | null
+    provider_refresh_token: string | null
+    created_at: Timestamp | null
+    updated_at: Timestamp | null
+    authentication_method: string
 }
 
 export interface AuthIdentities {
@@ -92,8 +110,8 @@ export interface AuthMfaFactors {
     id: string
     user_id: string
     friendly_name: string | null
-    factor_type: FactorType
-    status: FactorStatus
+    factor_type: AuthFactorType
+    status: AuthFactorStatus
     created_at: Timestamp
     updated_at: Timestamp
     secret: string | null
@@ -143,7 +161,7 @@ export interface AuthSessions {
     created_at: Timestamp | null
     updated_at: Timestamp | null
     factor_id: string | null
-    aal: AalLevel | null
+    aal: AuthAalLevel | null
     not_after: Timestamp | null
 }
 
@@ -196,11 +214,72 @@ export interface AuthUsers {
     reauthentication_token: Generated<string | null>
     reauthentication_sent_at: Timestamp | null
     is_sso_user: Generated<boolean>
+    deleted_at: Timestamp | null
 }
 
-export interface Order {
+export interface ExtensionsPgStatStatements {
+    userid: number | null
+    dbid: number | null
+    toplevel: boolean | null
+    queryid: Int8 | null
+    query: string | null
+    plans: Int8 | null
+    total_plan_time: number | null
+    min_plan_time: number | null
+    max_plan_time: number | null
+    mean_plan_time: number | null
+    stddev_plan_time: number | null
+    calls: Int8 | null
+    total_exec_time: number | null
+    min_exec_time: number | null
+    max_exec_time: number | null
+    mean_exec_time: number | null
+    stddev_exec_time: number | null
+    rows: Int8 | null
+    shared_blks_hit: Int8 | null
+    shared_blks_read: Int8 | null
+    shared_blks_dirtied: Int8 | null
+    shared_blks_written: Int8 | null
+    local_blks_hit: Int8 | null
+    local_blks_read: Int8 | null
+    local_blks_dirtied: Int8 | null
+    local_blks_written: Int8 | null
+    temp_blks_read: Int8 | null
+    temp_blks_written: Int8 | null
+    blk_read_time: number | null
+    blk_write_time: number | null
+    temp_blk_read_time: number | null
+    temp_blk_write_time: number | null
+    wal_records: Int8 | null
+    wal_fpi: Int8 | null
+    wal_bytes: Numeric | null
+    jit_functions: Int8 | null
+    jit_generation_time: number | null
+    jit_inlining_count: Int8 | null
+    jit_inlining_time: number | null
+    jit_optimization_count: Int8 | null
+    jit_optimization_time: number | null
+    jit_emission_count: Int8 | null
+    jit_emission_time: number | null
+}
+
+export interface ExtensionsPgStatStatementsInfo {
+    dealloc: Int8 | null
+    stats_reset: Timestamp | null
+}
+
+export interface OrderItem {
     created_at: Generated<Timestamp | null>
-    store_id: string
+    product_id: string
+    amount: number
+    selected_options: Json | null
+    order_id: string
+    product: Json
+    id: Generated<string>
+}
+
+export interface OrderSheet {
+    created_at: Generated<Timestamp | null>
     shipping_info: Json
     orderer_name: string
     orderer_phone: string
@@ -208,31 +287,41 @@ export interface Order {
     receiver_name: string
     receiver_phone: string
     id: Generated<string>
-}
-
-export interface OrderItem {
-    id: Generated<string>
-    created_at: Generated<Timestamp | null>
-    product_id: string
-    amount: number
-    selected_options: Json | null
-    order_id: string
-    product: Json
+    stage: Generated<string>
+    store_rid: number
+    rid: Generated<string | null>
 }
 
 export interface Owner {
     created_at: Generated<Timestamp | null>
     name: string
     id: string
-    store_id: string | null
+    store_rid: number | null
+}
+
+export interface PgsodiumDecryptedKey {
+    id: string | null
+    status: PgsodiumKeyStatus | null
+    created: Timestamp | null
+    expires: Timestamp | null
+    key_type: PgsodiumKeyType | null
+    key_id: Int8 | null
+    key_context: Buffer | null
+    name: string | null
+    associated_data: string | null
+    raw_key: Buffer | null
+    decrypted_raw_key: Buffer | null
+    raw_key_nonce: Buffer | null
+    parent_key: string | null
+    comment: string | null
 }
 
 export interface PgsodiumKey {
     id: Generated<string>
-    status: Generated<KeyStatus | null>
+    status: Generated<PgsodiumKeyStatus | null>
     created: Generated<Timestamp>
     expires: Timestamp | null
-    key_type: KeyType | null
+    key_type: PgsodiumKeyType | null
     key_id: Generated<Int8 | null>
     key_context: Generated<Buffer | null>
     name: string | null
@@ -244,14 +333,52 @@ export interface PgsodiumKey {
     user_data: string | null
 }
 
+export interface PgsodiumMaskColumns {
+    attname: string | null
+    attrelid: number | null
+    key_id: string | null
+    key_id_column: string | null
+    associated_columns: string | null
+    nonce_column: string | null
+    format_type: string | null
+}
+
+export interface PgsodiumMaskingRule {
+    attrelid: number | null
+    attnum: number | null
+    relnamespace: string | null
+    relname: string | null
+    attname: string | null
+    format_type: string | null
+    col_description: string | null
+    key_id_column: string | null
+    key_id: string | null
+    associated_columns: string | null
+    nonce_column: string | null
+    view_name: string | null
+    priority: number | null
+}
+
+export interface PgsodiumValidKey {
+    id: string | null
+    name: string | null
+    status: PgsodiumKeyStatus | null
+    key_type: PgsodiumKeyType | null
+    key_id: Int8 | null
+    key_context: Buffer | null
+    created: Timestamp | null
+    expires: Timestamp | null
+    associated_data: string | null
+}
+
 export interface Product {
     id: Generated<string>
     created_at: Generated<Timestamp | null>
     name: string
     price: number
     options: Generated<Json>
-    store_id: string
     info: string | null
+    store_rid: number
 }
 
 export interface StorageBuckets {
@@ -283,16 +410,17 @@ export interface StorageObjects {
 }
 
 export interface Store {
-    id: Generated<string>
     created_at: Generated<Timestamp | null>
     owner_id: string
     name: string
-    payment_receive_account: Json
+    payment_receive_account: Json | null
     shipping_method: Generated<Json>
+    rid: Generated<number>
 }
 
 export interface DB {
     'auth.audit_log_entries': AuthAuditLogEntries
+    'auth.flow_state': AuthFlowState
     'auth.identities': AuthIdentities
     'auth.instances': AuthInstances
     'auth.mfa_amr_claims': AuthMfaAmrClaims
@@ -306,10 +434,16 @@ export interface DB {
     'auth.sso_domains': AuthSsoDomains
     'auth.sso_providers': AuthSsoProviders
     'auth.users': AuthUsers
-    order: Order
+    'extensions.pg_stat_statements': ExtensionsPgStatStatements
+    'extensions.pg_stat_statements_info': ExtensionsPgStatStatementsInfo
     order_item: OrderItem
+    order_sheet: OrderSheet
     owner: Owner
+    'pgsodium.decrypted_key': PgsodiumDecryptedKey
     'pgsodium.key': PgsodiumKey
+    'pgsodium.mask_columns': PgsodiumMaskColumns
+    'pgsodium.masking_rule': PgsodiumMaskingRule
+    'pgsodium.valid_key': PgsodiumValidKey
     product: Product
     'storage.buckets': StorageBuckets
     'storage.migrations': StorageMigrations

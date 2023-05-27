@@ -25,13 +25,13 @@ export const getProductFromUUID = async (uuid: string) => {
     return result[0]
 }
 
-export const getStoreFromUUID = async (uuid: string) => {
-    if (!checkIsValidUUID(uuid)) throw new Error('Invalid UUID')
+export const getStoreFromUUID = async (rid: string) => {
+    if (rid == (+rid).toString()) throw new Error('Invalid rid')
 
     const result = await queryBuilder
         .selectFrom('store')
         .selectAll()
-        .where('id', '=', uuid)
+        .where('rid', '=', +rid)
         .limit(1)
         .execute()
 
@@ -70,7 +70,7 @@ export const createOrder = async (
         .transaction()
         .execute(async (transaction) => {
             const { id: orderId } = await transaction
-                .insertInto('order')
+                .insertInto('order_sheet')
                 .values({
                     orderer_email: body.orderer.email,
                     orderer_name: body.orderer.name,
@@ -78,7 +78,7 @@ export const createOrder = async (
                     receiver_name: body.receiver.name,
                     receiver_phone: body.receiver.phoneNumber,
                     shipping_info: JSON.stringify(body.shipping),
-                    store_id: productByIdMap.values().next().value.store_id,
+                    store_rid: productByIdMap.values().next().value.store_id,
                 })
                 .returning('id')
                 .executeTakeFirstOrThrow()
