@@ -26,7 +26,7 @@ export const getProductFromUUID = async (uuid: string) => {
 }
 
 export const getStoreFromUUID = async (rid: string) => {
-    if (rid == (+rid).toString()) throw new Error('Invalid rid')
+    if (rid != (+rid).toString()) throw new Error('Invalid rid')
 
     const result = await queryBuilder
         .selectFrom('store')
