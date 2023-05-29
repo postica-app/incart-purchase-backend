@@ -18,6 +18,7 @@ const ALLOWED_HOSTS = [
     'https://purchase.incart.me',
     'https://embed.incart.me',
     'https://rycont.loca.lt',
+    'https://t5176.incart.me',
     ...(IS_DEV ? ['https://hoppscotch.io'] : []),
 ]
 
