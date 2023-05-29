@@ -69,7 +69,7 @@ export const createOrder = async (
     const transactionResult = await queryBuilder
         .transaction()
         .execute(async (transaction) => {
-            const { id: orderId } = await transaction
+            const { id } = await transaction
                 .insertInto('order_sheet')
                 .values({
                     orderer_email: body.orderer.email,
@@ -78,7 +78,7 @@ export const createOrder = async (
                     receiver_name: body.receiver.name,
                     receiver_phone: body.receiver.phoneNumber,
                     shipping_info: JSON.stringify(body.shipping),
-                    store_rid: productByIdMap.values().next().value.store_id,
+                    store_rid: productByIdMap.values().next().value.store_rid,
                 })
                 .returning('id')
                 .executeTakeFirstOrThrow()
@@ -90,7 +90,7 @@ export const createOrder = async (
                         product_id: item.product_id,
                         amount: item.amount,
                         selected_options: JSON.stringify(item.selectedOptions),
-                        order_id: orderId,
+                        order_id: id,
                         product: JSON.stringify(
                             productByIdMap.get(item.product_id)
                         ),
