@@ -1,4 +1,5 @@
-import type { ColumnType } from './deps.ts'
+import { Buffer } from 'https://deno.land/std@0.160.0/io/buffer.ts'
+import { ColumnType } from './deps.ts'
 
 export type AuthAalLevel = 'aal1' | 'aal2' | 'aal3'
 
@@ -272,10 +273,10 @@ export interface OrderItem {
     created_at: Generated<Timestamp | null>
     product_id: string
     amount: number
-    selected_options: Json | null
     order_id: string
     product: Json
     id: Generated<string>
+    selected_options: string[] | null
 }
 
 export interface OrderSheet {
@@ -388,6 +389,10 @@ export interface StorageBuckets {
     created_at: Generated<Timestamp | null>
     updated_at: Generated<Timestamp | null>
     public: Generated<boolean | null>
+    avif_autodetection: Generated<boolean | null>
+    file_size_limit: Int8 | null
+    allowed_mime_types: string[] | null
+    owner_id: string | null
 }
 
 export interface StorageMigrations {
@@ -407,6 +412,8 @@ export interface StorageObjects {
     last_accessed_at: Generated<Timestamp | null>
     metadata: Json | null
     path_tokens: Generated<string[] | null>
+    version: string | null
+    owner_id: string | null
 }
 
 export interface Store {

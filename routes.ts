@@ -1,7 +1,7 @@
 import {
     getProductFromMultipleUUIDs,
     getProductFromUUID,
-    getStoreFromUUID,
+    getStoreFromRid,
     createOrder,
 } from './utils.ts'
 import { Router, CreateOrderType } from './deps.ts'
@@ -25,7 +25,7 @@ routeWithCaptcha.use(captcha)
 routeWithCaptcha
     .get('/store/:rid', async (ctx) => {
         const uuid = ctx.params.rid
-        const store = await getStoreFromUUID(uuid)
+        const store = await getStoreFromRid(uuid)
 
         ctx.response.body = store
     })

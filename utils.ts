@@ -25,7 +25,7 @@ export const getProductFromUUID = async (uuid: string) => {
     return result[0]
 }
 
-export const getStoreFromUUID = async (rid: string) => {
+export const getStoreFromRid = async (rid: string) => {
     if (rid != (+rid).toString()) throw new Error('Invalid rid')
 
     const result = await queryBuilder
@@ -89,7 +89,7 @@ export const createOrder = async (
                     body.cart.map((item) => ({
                         product_id: item.product_id,
                         amount: item.amount,
-                        selected_options: JSON.stringify(item.selectedOptions),
+                        selected_options: item.selectedOptions,
                         order_id: id,
                         product: JSON.stringify(
                             productByIdMap.get(item.product_id)
