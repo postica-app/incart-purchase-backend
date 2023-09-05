@@ -4,11 +4,13 @@ import {
     getStoreFromRid,
     createOrder,
     sendMail,
+    getStoreInfoForMailFromRid,
 } from './utils.ts'
 import { Router, CreateOrderType, ProductType } from './deps.ts'
 import { EndpointError } from './EndpointError.ts'
 import { captcha } from './middlewares/index.ts'
 import { orderMail } from './mail/order.ts'
+import { orderNotificationMail } from './mail/order_notification.ts'
 
 export const routeWithCaptcha = new Router()
 export const routeWithoutCaptcha = new Router()
@@ -93,17 +95,32 @@ routeWithCaptcha
         const orderedAt = orderSheet.created_at.toLocaleString('ko-KR', {
             timeZone: 'Asia/Seoul',
         })
-        const store = (await getStoreFromRid(fetchedProducts[0].store_rid)).name
+
+        const store = await getStoreInfoForMailFromRid(
+            fetchedProducts[0].store_rid
+        )
 
         await sendMail(
             body.orderer.email,
             '주문이 완료되었습니다',
             orderMail({
-                store,
+                store: store.storeName,
                 orderedAt,
                 orderId: orderSheet.rid!,
+                detailURI: `https://order.incart.me/${orderSheet.id}`,
             })
         )
+
+        if (store.ownerEmail)
+            await sendMail(
+                store.ownerEmail,
+                '새 주문이 접수되었습니다',
+                orderNotificationMail({
+                    orderedAt,
+                    orderRid: orderSheet.rid!,
+                    store: store.storeName,
+                })
+            )
 
         ctx.response.status = 201
         ctx.response.body = {

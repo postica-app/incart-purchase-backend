@@ -42,6 +42,15 @@ export const getStoreFromRid = async (rid: string | number) => {
     return result[0]
 }
 
+export const getStoreInfoForMailFromRid = async (rid: number) =>
+    await queryBuilder
+        .selectFrom('store')
+        .leftJoin('auth.users', 'store.owner_id', 'auth.users.id')
+        .select(['store.name as storeName', 'auth.users.email as ownerEmail'])
+        .where('rid', '=', rid)
+        .limit(1)
+        .executeTakeFirstOrThrow()
+
 export const getProductFromMultipleUUIDs = async (_uuids: string[]) => {
     const uuids = _uuids.map((uuid) =>
         uuid.toLowerCase().replaceAll(/[^a-f0-9]/g, '')
