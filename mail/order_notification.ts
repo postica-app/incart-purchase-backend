@@ -19,8 +19,10 @@ export const orderNotificationMail = (props: {
 <p>인카트와 포스티카는 상품 판매의 당사자가 아닙니다.</p>
 <p style="margin-top: 24px; margin-bottom: 24px;">
   사업자등록번호: 484-26-01833 <br />
-  대표: 박정한<br />이메일: rycont@postica.app<br />호스팅제공자:
-  클라우드플레어코리아 유한책임회사, Supabase Inc, Deno Land Inc<br />주소:
-  강원도 화천군 간동면 온수길 12
+  대표: 박정한<br />
+  이메일: rycont@postica.app<br />
+  호스팅제공자:
+  클라우드플레어코리아 유한책임회사, Supabase Inc, Deno Land Inc<br />
+  주소: 강원도 화천군 간동면 온수길 12
 </p>
 `
