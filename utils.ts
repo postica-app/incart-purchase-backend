@@ -3,6 +3,8 @@ import { queryBuilder } from './database.ts'
 import { DB } from './DatabaseType.ts'
 import { CreateOrderType } from './deps.ts'
 import { EndpointError } from './EndpointError.ts'
+import { MAIL_SENDER } from './constants.ts'
+import { RESEND_API_KEY } from './constants.ts'
 
 const UUID_REGEX =
     /[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}/
@@ -27,7 +29,7 @@ export const getProductFromUUID = async (uuid: string) => {
     return result[0]
 }
 
-export const getStoreFromRid = async (rid: string) => {
+export const getStoreFromRid = async (rid: string | number) => {
     if (rid != (+rid).toString()) throw new Error('Invalid rid')
 
     const result = await queryBuilder
@@ -71,7 +73,7 @@ export const createOrder = async (
     const transactionResult = await queryBuilder
         .transaction()
         .execute(async (transaction) => {
-            const { id } = await transaction
+            const orderSheet = await transaction
                 .insertInto('order_sheet')
                 .values({
                     orderer_email: body.orderer.email,
@@ -82,28 +84,41 @@ export const createOrder = async (
                     shipping_info: JSON.stringify(body.shipping),
                     store_rid: productByIdMap.values().next().value.store_rid,
                 })
-                .returning('id')
+                .returning(['id', 'created_at'])
                 .executeTakeFirstOrThrow()
 
-            return await transaction
+            await transaction
                 .insertInto('order_item')
                 .values(
                     body.cart.map((item) => ({
                         product_id: item.product_id,
                         amount: item.amount,
                         selected_options: item.selectedOptions,
-                        order_id: id,
+                        order_id: orderSheet.id,
                         product: JSON.stringify(
                             productByIdMap.get(item.product_id)
                         ),
                     }))
                 )
                 .execute()
+
+            return orderSheet
         })
 
-    const isSuccessful = transactionResult.length === body.cart.length
-
-    if (!isSuccessful) throw new Error('Transaction failed')
-
-    return true
+    return transactionResult
 }
+
+export const sendMail = (to: string, subject: string, html: string) =>
+    fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+            from: MAIL_SENDER,
+            to,
+            subject,
+            html,
+        }),
+    })

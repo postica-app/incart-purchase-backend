@@ -3,10 +3,12 @@ import {
     getProductFromUUID,
     getStoreFromRid,
     createOrder,
+    sendMail,
 } from './utils.ts'
 import { Router, CreateOrderType, ProductType } from './deps.ts'
 import { EndpointError } from './EndpointError.ts'
 import { captcha } from './middlewares/index.ts'
+import { orderMail } from './mail/order.ts'
 
 export const routeWithCaptcha = new Router()
 export const routeWithoutCaptcha = new Router()
@@ -84,7 +86,24 @@ routeWithCaptcha
                 throw new EndpointError('존재하지 않는 옵션입니다', 400)
         }
 
-        await createOrder(body, productByIdMap)
+        const orderSheet = await createOrder(body, productByIdMap)
+
+        if (!orderSheet.created_at) orderSheet.created_at = new Date()
+
+        const orderedAt = orderSheet.created_at.toLocaleString('ko-KR', {
+            timeZone: 'Asia/Seoul',
+        })
+        const store = (await getStoreFromRid(fetchedProducts[0].store_rid)).name
+
+        await sendMail(
+            body.orderer.email,
+            '주문이 완료되었습니다',
+            orderMail({
+                store,
+                orderedAt,
+                orderId: orderSheet.id,
+            })
+        )
 
         ctx.response.status = 201
         ctx.response.body = {
