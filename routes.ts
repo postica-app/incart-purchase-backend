@@ -101,7 +101,7 @@ routeWithCaptcha
             orderMail({
                 store,
                 orderedAt,
-                orderId: orderSheet.id,
+                orderId: orderSheet.rid!,
             })
         )
 

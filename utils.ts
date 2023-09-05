@@ -84,7 +84,7 @@ export const createOrder = async (
                     shipping_info: JSON.stringify(body.shipping),
                     store_rid: productByIdMap.values().next().value.store_rid,
                 })
-                .returning(['id', 'created_at'])
+                .returning(['id', 'created_at', 'rid'])
                 .executeTakeFirstOrThrow()
 
             await transaction
