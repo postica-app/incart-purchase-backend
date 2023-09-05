@@ -24,7 +24,12 @@ const ALLOWED_HOSTS = [
 
 app.use(errorResponse)
 app.use((ctx, next) => {
-    const origin = ctx.request.headers.get('origin')
+    let origin = ctx.request.headers.get('origin')
+
+    if (IS_DEV) {
+        origin = 'http://localhost'
+    }
+
     if (!origin) {
         ctx.response.status = 301
         return
@@ -51,6 +56,5 @@ app.use(routeWithoutCaptcha.routes())
 app.use(routeWithCaptcha.allowedMethods())
 app.use(routeWithCaptcha.routes())
 
-await app.listen({ port: 8000 })
-
 console.log('Server is running on port 8000')
+await app.listen({ port: 8000 })

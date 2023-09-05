@@ -1,5 +1,7 @@
+import { AllSelection } from 'https://cdn.jsdelivr.net/npm/kysely/dist/esm/parser/select-parser.js'
 import { queryBuilder } from './database.ts'
-import { CreateOrderType, Doc, ProductType } from './deps.ts'
+import { DB } from './DatabaseType.ts'
+import { CreateOrderType } from './deps.ts'
 import { EndpointError } from './EndpointError.ts'
 
 const UUID_REGEX =
@@ -46,11 +48,11 @@ export const getProductFromMultipleUUIDs = async (_uuids: string[]) => {
     if (uuids.some((uuid) => !checkIsValidUUID(uuid)))
         throw new Error('Invalid UUID')
 
-    const queryResult = (await queryBuilder
+    const queryResult = await queryBuilder
         .selectFrom('product')
         .selectAll()
         .where('id', 'in', uuids)
-        .execute()) as unknown as Doc<ProductType>[]
+        .execute()
 
     if (queryResult.length !== uuids.length)
         throw new EndpointError(
@@ -64,7 +66,7 @@ export const getProductFromMultipleUUIDs = async (_uuids: string[]) => {
 
 export const createOrder = async (
     body: CreateOrderType,
-    productByIdMap: Map<string, Doc<ProductType>>
+    productByIdMap: Map<string, AllSelection<DB, 'product'>>
 ) => {
     const transactionResult = await queryBuilder
         .transaction()

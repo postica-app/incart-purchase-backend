@@ -4,7 +4,7 @@ import {
     getStoreFromRid,
     createOrder,
 } from './utils.ts'
-import { Router, CreateOrderType } from './deps.ts'
+import { Router, CreateOrderType, ProductType } from './deps.ts'
 import { EndpointError } from './EndpointError.ts'
 import { captcha } from './middlewares/index.ts'
 
@@ -12,9 +12,6 @@ export const routeWithCaptcha = new Router()
 export const routeWithoutCaptcha = new Router()
 
 routeWithoutCaptcha.get('/product/:uuid', async (ctx) => {
-    console.log('이게 들어가야되는거 아니에요?')
-    console.log('이게 왜 실행됨?')
-
     const uuid = ctx.params.uuid
     const product = await getProductFromUUID(uuid)
 
@@ -65,15 +62,20 @@ routeWithCaptcha
             if (!product)
                 throw new EndpointError('상품 정보를 찾을 수 없습니다', 400)
 
+            if (product.deleted_at)
+                throw new EndpointError('삭제된 상품입니다', 400)
+
+            const options = product.options as unknown as ProductType['options']
+
             const hasSameLength =
-                item.selectedOptions.length === (product.options?.length || 0)
+                item.selectedOptions.length === (options?.length || 0)
 
             if (!hasSameLength)
                 throw new EndpointError('선택한 옵션이 잘못되었습니다', 400)
 
             const isOptionsInProvided = item.selectedOptions.every(
                 (selection, index) =>
-                    product.options[index].items.find(
+                    options[index].items.find(
                         (option) => option.name === selection
                     )
             )

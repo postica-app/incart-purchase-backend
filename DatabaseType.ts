@@ -1,4 +1,4 @@
-import { Buffer } from 'https://deno.land/std@0.160.0/io/buffer.ts'
+import { Buffer } from 'https://deno.land/std@0.177.0/node/internal/buffer.mjs'
 import { ColumnType } from './deps.ts'
 
 export type AuthAalLevel = 'aal1' | 'aal2' | 'aal3'
@@ -380,6 +380,7 @@ export interface Product {
     options: Generated<Json>
     info: string | null
     store_rid: number
+    deleted_at: Timestamp | null
 }
 
 export interface StorageBuckets {
