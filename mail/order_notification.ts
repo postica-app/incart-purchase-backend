@@ -13,7 +13,7 @@ export const orderNotificationMail = (props: {
 </ol>
 <p>아래 링크에서 주문에 관련한 정보를 확인할 수 있습니다</p>
 <a href="https://owner.incart.me/order/${props.orderRid}">
-  https://order.incart.me/${props.orderRid}
+https://owner.incart.me/order/${props.orderRid}
 </a>
 <hr>
 <p>인카트와 포스티카는 상품 판매의 당사자가 아닙니다.</p>
