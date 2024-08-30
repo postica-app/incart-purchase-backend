@@ -2,9 +2,11 @@ import {
     getProductFromMultipleUUIDs,
     getProductFromUUID,
     getStoreFromRid,
+    getOrderFromId,
     createOrder,
     sendMail,
     getStoreInfoForMailFromRid,
+    createOrderRecordHash,
 } from './utils.ts'
 import { Router, CreateOrderType, ProductType } from './deps.ts'
 import { EndpointError } from './EndpointError.ts'
@@ -89,6 +91,7 @@ routeWithCaptcha
         }
 
         const orderSheet = await createOrder(body, productByIdMap)
+        const orderSheetHash = await createOrderRecordHash(orderSheet)
 
         if (!orderSheet.created_at) orderSheet.created_at = new Date()
 
@@ -107,7 +110,7 @@ routeWithCaptcha
                 store: store.storeName,
                 orderedAt,
                 orderId: orderSheet.rid!,
-                detailURI: `https://order.incart.me/${orderSheet.id}`,
+                detailURI: `https://order.incart.me/${orderSheet.id}?r=${orderSheetHash}`,
             })
         )
 
@@ -126,4 +129,14 @@ routeWithCaptcha
         ctx.response.body = {
             success: true,
         }
+    })
+    .get('/order/:id', async (ctx) => {
+        const id = ctx.params.id
+        const hash = ctx.request.url.searchParams.get('hash')
+
+        if (!hash) throw new EndpointError('해시값이 필요합니다', 400)
+
+        const order = await getOrderFromId(id, hash)
+
+        ctx.response.body = order
     })
