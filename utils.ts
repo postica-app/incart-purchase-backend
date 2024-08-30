@@ -93,7 +93,7 @@ export const createOrder = async (
                     shipping_info: JSON.stringify(body.shipping),
                     store_rid: productByIdMap.values().next().value.store_rid,
                 })
-                .returning(['id', 'created_at', 'rid'])
+                .returningAll()
                 .executeTakeFirstOrThrow()
 
             await transaction
@@ -131,3 +131,45 @@ export const sendMail = (to: string, subject: string, html: string) =>
             html,
         }),
     })
+
+export const getOrderFromId = async (id: string, hash: string) => {
+    if (!checkIsValidUUID(id)) throw new Error('Invalid UUID')
+
+    const [record] = await queryBuilder
+        .selectFrom('order_sheet')
+        .selectAll()
+        .where('id', '=', id)
+        .limit(1)
+        .execute()
+
+    if (!record) throw new EndpointError('주문을 찾을 수 없습니다', 404)
+    if (!(await isValidOrderHash(hash, record))) throw new Error('Invalid hash')
+
+    return record
+}
+
+async function isValidOrderHash(
+    hash: string,
+    record: AllSelection<DB, 'order_sheet'>
+) {
+    const computedHash = await createOrderRecordHash(record)
+    return hash === computedHash
+}
+
+export async function createOrderRecordHash(
+    record: AllSelection<DB, 'order_sheet'>
+) {
+    const hashContent = record.id + record.rid + record.orderer_phone
+
+    const computedHash = await crypto.subtle.digest(
+        'SHA-512',
+        new TextEncoder().encode(hashContent)
+    )
+
+    const cipher = Array.from(new Uint8Array(computedHash))
+        .map((byte) => byte.toString(16).padStart(2, '0'))
+        .join('')
+        .slice(0, 27)
+
+    return cipher
+}
